@@ -30,4 +30,10 @@ var routes = Routes{
 		Pattern:     "/users/{userID}",
 		HandlerFunc: GetUserHandler,
 	},
+	Route{
+		Name:        "CreateUserHandler",
+		Method:      "POST",
+		Pattern:     "/users",
+		HandlerFunc: CreateUserHandler,
+	},
 }
