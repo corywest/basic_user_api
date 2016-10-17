@@ -16,8 +16,8 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	users := Users{
-		User{Name: "Bobby", Email: "bob@bobby.com"},
-		User{Name: "Tommy", Email: "tom@tommy.com"},
+		User{Email: "bob@bobby.com", Password: "bobby20016"},
+		User{Email: "tom@tommy.com", Password: "tommy2016"},
 	}
 
 	w.Header().Set("Content-Type", "application/json;charset-UTF-8")
@@ -45,11 +45,9 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
-
 	if err := json.Unmarshal(body, &user); err != nil {
 		w.Header().Set("Content-Type", "application/json;charset-UTF-8")
 		w.WriteHeader(422)
