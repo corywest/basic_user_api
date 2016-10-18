@@ -6,11 +6,20 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
 
 func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+
+	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+	if len(s) != 2 {
+		http.Error(w, "Not authorized", 401)
+		return
+	}
+
 	fmt.Fprintf(w, "Hello there user!")
 }
 
