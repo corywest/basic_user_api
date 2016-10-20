@@ -6,13 +6,32 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
 )
 
 func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
+	var users Users
+
+	file, err := os.Open("./users.json")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dec := json.NewDecoder(file)
+	defer file.Close()
+
+	if err := dec.Decode(&users); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(users)
+
 	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
@@ -34,7 +53,7 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if pair[0] != "username" || pair[1] != "password" {
-		http.Error(w, "Not authorized", 401)
+		http.Error(w, "Not authorized. Please enter a username and password", 401)
 		return
 	}
 
