@@ -32,6 +32,12 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(users)
 
+	for _, user := range users {
+		fmt.Println(user.Email)
+		fmt.Println(user.Password)
+
+	}
+
 	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
@@ -52,9 +58,15 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if pair[0] != "username" || pair[1] != "password" {
-		http.Error(w, "Not authorized. Please enter a username and password", 401)
-		return
+	for _, user := range users {
+		fmt.Println("Inside for loop...")
+		fmt.Println(user.Email)
+		fmt.Println(user.Password)
+
+		if pair[0] != user.Email || pair[1] != user.Password {
+			http.Error(w, "Not authorized. Please enter a user email and password", 401)
+			return
+		}
 	}
 
 	fmt.Fprintf(w, "Hello there user!")

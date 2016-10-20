@@ -3,10 +3,5 @@
         "id": 1,
         "email": "bob@bobby.com",
         "password": "bobby2016"
-    },
-    {
-        "id": 2,
-        "email": "tom@tommy.com",
-        "password": "tommy2016"
     }
 ]
