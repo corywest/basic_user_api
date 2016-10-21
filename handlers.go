@@ -30,14 +30,6 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	fmt.Println(users)
-
-	for _, user := range users {
-		fmt.Println(user.Email)
-		fmt.Println(user.Password)
-
-	}
-
 	w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
@@ -67,8 +59,11 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Not authorized. Please enter a user email and password", 401)
 			return
 		}
-	}
 
+		if user.Admin != true {
+			http.Error(w, "Admin access only!", 403)
+		}
+	}
 	fmt.Fprintf(w, "Hello there user!")
 }
 
