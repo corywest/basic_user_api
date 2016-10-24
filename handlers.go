@@ -61,7 +61,7 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if user.Admin != true {
-			http.Error(w, "Admin access only!", 403)
+			http.Error(w, "Admin access only!", 401)
 		}
 	}
 	fmt.Fprintf(w, "Hello there user!")
