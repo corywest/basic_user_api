@@ -9,15 +9,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
 )
 
-func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
-	var users Users
+var adminUsers AdminUsers
+var localUsers Users
 
-	file, err := os.Open("./users.json")
+func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
+	file, err := os.Open("./admin_users.json")
 
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +28,7 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 	dec := json.NewDecoder(file)
 	defer file.Close()
 
-	if err := dec.Decode(&users); err != nil {
+	if err := dec.Decode(&adminUsers); err != nil {
 		log.Fatal(err)
 	}
 
@@ -50,21 +52,20 @@ func HelloUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, user := range users {
-		fmt.Println("Inside for loop...")
-		fmt.Println(user.Email)
-		fmt.Println(user.Password)
+	for _, adminUser := range adminUsers {
+		fmt.Println(adminUser.Email)
+		fmt.Println(adminUser.Password)
 
-		if pair[0] != user.Email || pair[1] != user.Password {
-			http.Error(w, "Not authorized. Please enter a user email and password", 401)
+		if pair[0] != adminUser.Email || pair[1] != adminUser.Password {
+			http.Error(w, "Not authorized. Please enter an admin user email and password", 401)
 			return
 		}
 
-		if user.Admin != true {
+		if adminUser.Admin != true {
 			http.Error(w, "Admin access only!", 401)
 		}
 	}
-	fmt.Fprintf(w, "Hello there user!")
+	fmt.Fprintf(w, "Hello there adminUser!")
 }
 
 func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +74,53 @@ func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		User{Email: "tom@tommy.com", Password: "tommy2016"},
 	}
 
+	file, err := os.Open("./admin_users.json")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dec := json.NewDecoder(file)
+	defer file.Close()
+
+	if err := dec.Decode(&adminUsers); err != nil {
+		log.Fatal(err)
+	}
+
 	w.Header().Set("Content-Type", "application/json;charset-UTF-8")
 	w.WriteHeader(http.StatusOK)
+
+	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+	if len(s) != 2 {
+		http.Error(w, "Not authorized", 401)
+		return
+	}
+
+	b, err := base64.StdEncoding.DecodeString(s[1])
+	if err != nil {
+		http.Error(w, err.Error(), 401)
+		return
+	}
+
+	pair := strings.SplitN(string(b), ":", 2)
+	if len(pair) != 2 {
+		http.Error(w, "Not authorized", 401)
+		return
+	}
+
+	for _, adminUser := range adminUsers {
+		fmt.Println(adminUser.Email)
+		fmt.Println(adminUser.Password)
+
+		if pair[0] != adminUser.Email || pair[1] != adminUser.Password {
+			http.Error(w, "Not authorized. Please enter an admin user email and password", 401)
+			return
+		}
+
+		if adminUser.Admin != true {
+			http.Error(w, "Admin access only!", 401)
+		}
+	}
 
 	if err := json.NewEncoder(w).Encode(users); err != nil {
 		panic(err)
@@ -85,9 +131,19 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json;charset-UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	vars := mux.Vars(r)
-	userID := vars["userID"]
-	fmt.Fprintln(w, "User page for id:", userID)
+	params := mux.Vars(r)
+
+	for _, user := range localUsers {
+
+		if paramID, err := strconv.Atoi(params["id"]); err == nil {
+			if user.ID == paramID {
+				json.NewEncoder(w).Encode(user)
+				return
+			}
+		}
+	}
+
+	json.NewEncoder(w).Encode(&Users{})
 }
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
