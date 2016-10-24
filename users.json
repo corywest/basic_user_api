@@ -3,6 +3,5 @@
         "id": 1,
         "email": "bob@bobby.com",
         "password": "bobby2016",
-        "admin": true
     }
 ]
